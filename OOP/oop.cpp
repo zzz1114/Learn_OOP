@@ -1,6 +1,61 @@
 #include <iostream>
+#include <string>
 
+const double PI = 3.14159;
 
+//面向对象---封装
+class Circle {
+public:
+	//半径
+	int radius;	
+
+	//获取面积
+	double getArea()
+	{
+		return PI * radius * radius;
+	}
+};
+
+class Student {
+public:
+	//设置姓名
+	void SetName(std::string name)
+	{
+		StuName.assign(name);
+	}
+
+	//设置学号
+	void SetNum(int num)
+	{
+		StuNum = num;
+	}
+
+	//显示信息
+	void ShowInfo()
+	{
+		std::cout << "学生姓名：" << StuName << std::endl;
+		std::cout << "学生学号：" << StuNum << std::endl;
+	}
+
+private:
+	std::string StuName;
+	int StuNum;
+};
+
+int main()
+{
+	Student stu;
+	stu.SetName("张三");
+	stu.SetNum(10086);
+	stu.ShowInfo();
+	std::cout << "-------------------" << std::endl;
+
+	Circle c;
+	c.radius = 10;
+	std::cout << "圆的面积为：" << c.getArea() << std::endl;
+
+	return 0;
+}
 
 /*
 //引用
