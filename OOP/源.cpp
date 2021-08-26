@@ -1,6 +1,60 @@
 #include <iostream>
 
-//new申请内存
+
+
+/*
+//引用
+int& func()
+{
+	static int a = 10;
+	return a;
+}
+
+//常量引用，在引用前面加上const: const int &p，则p不可修改，可以用于函数中防止形参被意外修改
+//本来引用 int& p = a; 相当于  int* const p = &a;
+//前面加上了const后,const int& p = a: 相当于 const int* const p = &a;则既不能修改p指向的对象，也不能通过p修改对象的值
+void ShowValue(const int& val)
+{
+	std::cout << "value is " << val << std::endl;
+}
+
+int main()
+{
+	int &c = func();		//c也是一个引用，它是函数func返回值的一个引用，而func是a的一个引用，因此c也就是a的一个引用
+	std::cout << "c = " << c << std::endl;
+	func() = 100;			//返回值是静态变量a的一个引用，可以作为左值，直接修改a的值。
+	std::cout << "c = " << c << std::endl;
+
+	int num = 5;
+	int& ref1 = num;
+	int& ref2 = ref1;
+	int& ref3 = ref2;
+	std::cout << "---------------------------" << std::endl;
+	std::cout << "num = " << num << std::endl;
+	std::cout << "ref1 = " << ref1 << std::endl;
+	std::cout << "ref2 = " << ref2 << std::endl;
+	std::cout << "ref3 = " << ref3 << std::endl;
+
+	ref3 = 10;
+	std::cout << "\n由ref3修改之后：" << std::endl;
+	std::cout << "num = " << num << std::endl;
+	std::cout << "ref1 = " << ref1 << std::endl;
+	std::cout << "ref2 = " << ref2 << std::endl;
+	std::cout << "ref3 = " << ref3 << std::endl;			//可见，一个变量的引用的引用，等价于这个变量的一个引用
+	return 0;
+}
+*/
+
+
+
+
+
+
+
+
+/*
+//申请内存与释放
+
 //申请一个10*5的二维数组，并返回首地址
 void get2DArr(int(*&p)[5])
 {
@@ -15,7 +69,7 @@ void delete2DArr(int(*&p)[5])
 }
 
 int main()
-{
+{	
 	int(*p)[5] = NULL;
 	get2DArr(p);
 	//p = new int[10][5];
@@ -31,3 +85,4 @@ int main()
 	//std::cout << p[1][1] << " " << p[1][4] << std::endl;
 	return 0;
 }
+*/
