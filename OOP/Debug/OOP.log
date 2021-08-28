@@ -1,4 +1,7 @@
 ﻿  point_circle.cpp
 D:\MyData\Code\C++\learnInBilibili\OOP\OOP\point_circle.cpp(3,27): warning C4305: “初始化”: 从“double”到“float”截断
-D:\MyData\Code\C++\learnInBilibili\OOP\OOP\point_circle.cpp(67,13): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
-  OOP.vcxproj -> D:\MyData\Code\C++\learnInBilibili\OOP\Debug\OOP.exe
+D:\MyData\Code\C++\learnInBilibili\OOP\OOP\point_circle.cpp(90,27): error C2440: “初始化”: 无法从“Point”转换为“Point”
+D:\MyData\Code\C++\learnInBilibili\OOP\OOP\point_circle.cpp(90,27): message : 由于复制构造函数不明确或没有可用的复制构造函数，因此无法复制构造 class“Point”
+D:\MyData\Code\C++\learnInBilibili\OOP\OOP\point_circle.cpp(91,52): error C2664: “double Point::GetDistance(Point)”: 无法将参数 1 从“Point”转换为“Point”
+D:\MyData\Code\C++\learnInBilibili\OOP\OOP\point_circle.cpp(91,52): message : 由于复制构造函数不明确或没有可用的复制构造函数，因此无法复制构造 class“Point”
+D:\MyData\Code\C++\learnInBilibili\OOP\OOP\point_circle.cpp(24,9): message : 参见“Point::GetDistance”的声明
