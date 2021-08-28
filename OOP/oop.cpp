@@ -21,7 +21,8 @@ public:
 	//设置姓名
 	void SetName(std::string name)
 	{
-		StuName.assign(name);
+		//StuName.assign(name);
+		StuName = name;
 	}
 
 	//设置学号
@@ -42,8 +43,18 @@ private:
 	int StuNum;
 };
 
+class Test {	//测试默认权限
+	int a;
+	void func() { std::cout << a << std::endl; }
+};
+
 int main()
 {
+	Test test;
+	//test.a = 10;		//不能访问
+	//test.func( );		//不能访问
+	std::cout << "-------------------" << std::endl;
+
 	Student stu;
 	stu.SetName("张三");
 	stu.SetNum(10086);

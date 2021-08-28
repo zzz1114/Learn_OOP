@@ -1,2 +1,7 @@
 ﻿  oop.cpp
-  OOP.vcxproj -> D:\MyData\Code\C++\learnInBilibili\OOP\Debug\OOP.exe
+D:\MyData\Code\C++\learnInBilibili\OOP\OOP\oop.cpp(54,6): error C2248: “Test::a”: 无法访问 private 成员(在“Test”类中声明)
+D:\MyData\Code\C++\learnInBilibili\OOP\OOP\oop.cpp(47): message : 参见“Test::a”的声明
+D:\MyData\Code\C++\learnInBilibili\OOP\OOP\oop.cpp(46): message : 参见“Test”的声明
+D:\MyData\Code\C++\learnInBilibili\OOP\OOP\oop.cpp(55,12): error C2248: “Test::func”: 无法访问 private 成员(在“Test”类中声明)
+D:\MyData\Code\C++\learnInBilibili\OOP\OOP\oop.cpp(48): message : 参见“Test::func”的声明
+D:\MyData\Code\C++\learnInBilibili\OOP\OOP\oop.cpp(46): message : 参见“Test”的声明
