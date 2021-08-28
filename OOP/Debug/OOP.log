@@ -1,7 +1,4 @@
-﻿  oop.cpp
-D:\MyData\Code\C++\learnInBilibili\OOP\OOP\oop.cpp(54,6): error C2248: “Test::a”: 无法访问 private 成员(在“Test”类中声明)
-D:\MyData\Code\C++\learnInBilibili\OOP\OOP\oop.cpp(47): message : 参见“Test::a”的声明
-D:\MyData\Code\C++\learnInBilibili\OOP\OOP\oop.cpp(46): message : 参见“Test”的声明
-D:\MyData\Code\C++\learnInBilibili\OOP\OOP\oop.cpp(55,12): error C2248: “Test::func”: 无法访问 private 成员(在“Test”类中声明)
-D:\MyData\Code\C++\learnInBilibili\OOP\OOP\oop.cpp(48): message : 参见“Test::func”的声明
-D:\MyData\Code\C++\learnInBilibili\OOP\OOP\oop.cpp(46): message : 参见“Test”的声明
+﻿  point_circle.cpp
+D:\MyData\Code\C++\learnInBilibili\OOP\OOP\point_circle.cpp(3,27): warning C4305: “初始化”: 从“double”到“float”截断
+D:\MyData\Code\C++\learnInBilibili\OOP\OOP\point_circle.cpp(67,13): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+  OOP.vcxproj -> D:\MyData\Code\C++\learnInBilibili\OOP\Debug\OOP.exe

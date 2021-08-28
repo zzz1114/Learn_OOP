@@ -1,72 +1,72 @@
-#include <iostream>
-#include <string>
-
-const double PI = 3.14159;
-
-//面向对象---封装
-class Circle {
-public:
-	//半径
-	int radius;	
-
-	//获取面积
-	double getArea()
-	{
-		return PI * radius * radius;
-	}
-};
-
-class Student {
-public:
-	//设置姓名
-	void SetName(std::string name)
-	{
-		//StuName.assign(name);
-		StuName = name;
-	}
-
-	//设置学号
-	void SetNum(int num)
-	{
-		StuNum = num;
-	}
-
-	//显示信息
-	void ShowInfo()
-	{
-		std::cout << "学生姓名：" << StuName << std::endl;
-		std::cout << "学生学号：" << StuNum << std::endl;
-	}
-
-private:
-	std::string StuName;
-	int StuNum;
-};
-
-class Test {	//测试默认权限
-	int a;
-	void func() { std::cout << a << std::endl; }
-};
-
-int main()
-{
-	Test test;
-	//test.a = 10;		//不能访问
-	//test.func( );		//不能访问
-	std::cout << "-------------------" << std::endl;
-
-	Student stu;
-	stu.SetName("张三");
-	stu.SetNum(10086);
-	stu.ShowInfo();
-	std::cout << "-------------------" << std::endl;
-
-	Circle c;
-	c.radius = 10;
-	std::cout << "圆的面积为：" << c.getArea() << std::endl;
-
-	return 0;
-}
+//#include <iostream>
+//#include <string>
+//
+//const double pi = 3.14159;
+//
+////面向对象---封装
+//class circle {
+//public:
+//	//半径
+//	int radius;	
+//
+//	//获取面积
+//	double getarea()
+//	{
+//		return pi * radius * radius;
+//	}
+//};
+//
+//class student {
+//public:
+//	//设置姓名
+//	void setname(std::string name)
+//	{
+//		//stuname.assign(name);
+//		stuname = name;
+//	}
+//
+//	//设置学号
+//	void setnum(int num)
+//	{
+//		stunum = num;
+//	}
+//
+//	//显示信息
+//	void showinfo()
+//	{
+//		std::cout << "学生姓名：" << stuname << std::endl;
+//		std::cout << "学生学号：" << stunum << std::endl;
+//	}
+//
+//private:
+//	std::string stuname;
+//	int stunum;
+//};
+//
+//class test {	//测试默认权限
+//	int a;
+//	void func() { std::cout << a << std::endl; }
+//};
+//
+//int main()
+//{
+//	test test;
+//	//test.a = 10;		//不能访问
+//	//test.func( );		//不能访问
+//	std::cout << "-------------------" << std::endl;
+//
+//	student stu;
+//	stu.setname("张三");
+//	stu.setnum(10086);
+//	stu.showinfo();
+//	std::cout << "-------------------" << std::endl;
+//
+//	circle c;
+//	c.radius = 10;
+//	std::cout << "圆的面积为：" << c.getarea() << std::endl;
+//
+//	return 0;
+//}
 
 /*
 //引用
