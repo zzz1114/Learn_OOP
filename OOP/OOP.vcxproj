@@ -139,6 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="friend.cpp" />
     <ClCompile Include="oop.cpp" />
     <ClCompile Include="point_circle.cpp" />
     <ClCompile Include="test case1-cube.cpp" />

@@ -1,2 +1,3 @@
-﻿  point_circle.cpp
-  OOP.vcxproj -> D:\MyData\Code\C++\learnInBilibili\OOP\Debug\OOP.exe
+﻿  friend.cpp
+D:\MyData\Code\C++\learnInBilibili\OOP\OOP\friend.cpp(15,14): error C2027: 使用了未定义类型“A”
+D:\MyData\Code\C++\learnInBilibili\OOP\OOP\friend.cpp(4): message : 参见“A”的声明
