@@ -384,7 +384,7 @@ cout << p->name << endl;	//当然是错的
 
 ## const修饰成员
 
-#### 饰成员函数 : 常函数
+### 饰成员函数 : 常函数
 
 - 成员函数后加上const后称这个函数为**常函数**
 - 常函数内不可以修改成员属性
@@ -420,7 +420,47 @@ class Person{
 };
 ```
 
-#### 修饰成员属性
+### 什么时候用常函数（！！），为什么加上mutable
+
+养成良好的代码吸管，**对于不改变对象状态**的成员函数，**都应该声明为常函数**
+
+#### 什么是对象状态？
+
+语言上讲，成员状态就是各个成员属性
+
+但是，是否改变对象状态应该根据**这一对对象对外接口所反映的信息**来判断
+
+- 不改变对象状态的函数**不一定**就不改变对象值
+
+下面的例子：
+
+```c++
+class Line{
+public:
+    Line(const Point &p1, const Point &p2) : p1(p1), p2(p2), len(-1) {}
+    doublt getLen();
+private:
+    Point p1, p2;
+    double len;
+};
+
+double Line::getLen()
+{
+    if(len < 0)
+    {
+        double x = p1.getX() - p2.getX();
+        double y = p1.getY() - p2.getY();
+        len = sqrt(x * x + y * y);
+    }
+    return len;
+}
+```
+
+一个线段类，里面有两个点对象作为线段的两个端点，还有一个线段长度的属性。注意到构造函数中将len初始化为 -1，而在getLen中计算了线段长度。这是因为有些情况下构造了线段对象后不需要获取线段长度，也就不需要计算（耗时），因此特意加上一个getLen函数来在必要情况下获取长度，并且加上一个len属性来暂存这个值，这样做的好处是下一次获取长度就不需要再次计算了。
+
+这里的getLen函数并**没有改变对象状态**，只是在第一次调用时计算并改变了len的值，在后面的调用中只是返回了len，所以应该设置成常函数，但是常函数不能修改属性的值，所以要在属性len声明的时候加上mutable关键字
+
+### 修饰成员属性
 
 在属性前面加上const就成了常数据成员，**在任何函数中都不能对该成员赋值**，因此需要对其初始化。在构造函数中，只能通过初始化列表获取初始值，进行初始化。
 
@@ -436,7 +476,7 @@ class Person{
 const int Person::b = 10;
 ```
 
-#### 修饰对象：常对象
+### 修饰对象：常对象
 
 - 声明对象前加上const称为常对象
 - 常对象只能调用常函数
@@ -447,7 +487,7 @@ const int Person::b = 10;
 
 简单来说就是通过友元关系，可以在普通函数与类之间建立特殊关系，使得普通函数可以直接访问类的私有属性，同样，这个类与另一个类之间也可以建立友元关系，使得可以访问私有属性：
 
-#### 全局函数做友元
+### 全局函数做友元
 
 ```c++
 class A{
@@ -468,7 +508,7 @@ void setVal(A *a, int m)
 
 
 
-#### 类做友元
+### 类做友元
 
 ```c++
 class A{
@@ -499,7 +539,7 @@ friend class B;
 
 声明之后，在B类中所有的成员函数都可以访问A的私有属性了 
 
-#### 成员函数做友元
+### 成员函数做友元
 
 如果只是想要某一个成员函数作为友元函数，就不可以将整个类作为另一类的友元，只需要在函数前加上friend关键字，并且加上这个成员函数所属的类名作为限定就可以了
 
@@ -526,13 +566,114 @@ private:
 
 
 
+## 运算符重载
 
+将operator(符号作为函数名)，可以有成员函数重载和全局函数重载
 
+### 加号重载：
 
+```c++
+class Complex {
+	friend Complex operator+(Complex& c1, int m);
 
+public:
+	Complex() : m_Real(0), m_Imag(0) {}
+	Complex(int real, int imag) : m_Real(real), m_Imag(imag) {}
+	Complex operator+(Complex &comp);
+	//显示，这个show函数是成员函数，因此可以访问这个类的私有属性
+	void Show() const { dcout << m_Real << " + " << m_Imag << "i" << endl; }
+private:
+	int m_Real;	//实部
+	int m_Imag;	//虚部
+};
+Complex Complex::operator+(Complex &comp)
+{
+	Complex temp;
+	temp.m_Real = this->m_Real + comp.m_Real;
+	temp.m_Imag = this->m_Imag + comp.m_Imag;
+	return temp;
+}
 
+Complex operator+(Complex& c1, int m)
+{
+	Complex temp;
+	temp.m_Real = c1.m_Real + m;
+	temp.m_Imag = c1.m_Imag;
+	return temp;
+}
 
+int main()
+{
+	Complex a(2, 4), b(1, 5);
+	a.Show();
+	(a + b).Show();
+	(a + 5).Show();
+	//a.operator+(b).Show();
+	return 0;
+}
+```
 
+> 使用引用可以避免拷贝一个新对象，减少内存使用，减少运行时间
+
+上段代码对加号进行了重载，分别使用了成员函数重载和全局函数重载，并且这个加号运算符重载又进行了重载，使得形参有两个版本：(Complex,  Complex)  和  ( Complex,  int  )
+
+### 左移符号(<<)重载
+
+使用普通的cout << "helloworld" ;只能输出基本数据类型
+
+```c++
+class Person
+{
+...
+private:
+    string name;
+    string sex;
+    int age;
+};
+```
+
+如果想要同时输出Person类某个对象的姓名、性别、年龄，需要使用cout << p.name << p.sex << p.age;
+
+这样很麻烦，通过左移符号重载，可以定义重载函数直接 cout << p ，但是这个重载函数有些地方要注意：
+
+**不能是成员函数，只能定义为全局函数**
+
+因为如果是成员函数，就需要由一个对象来调用这个函数，这样，这个对象作为调用者，cout 则会作为参数，最后调用的语法就成了 Person p.operator<<(cout); 或者  p << cout 跟原来的正好反过来了。
+
+```c++
+class Person{
+    //cout 类型是 std::ostream，而全局只有cout一个变量，所以需要用引用的方式作为形参
+    void operator<< (ostream &cout);
+};
+Person p;
+p.operator<<(cout);
+p << cout;			
+```
+
+需要将<<的重载定义为全局函数：
+
+```c++
+void operator<<(ostream &out, Person p)
+{
+    out << p.name << p.sex << p.age;
+}
+cout << p;	//这样就是对的了
+```
+
+而想要在调用时这样写：
+cout << p << "hello world" << endl; 这就是上面写的链式编程思想了，就需要函数operator<<()返回一个cout：
+
+```c++
+std::ostream& operator<<(std::ostream &out, Person p)
+{
+    out << p.name << p.sex << p.age;
+    return out;
+}
+```
+
+相当于 cout << p之后继续返回了一个cout，然后执行cout << "hello world".....
+
+> 这里函数返回类型是std::ostream& 而不是 std::ostream是因为函数形参out本身就是一个std::ostream&类型，返回的out就得是引用类型。而为什么形参是引用？因为cout 在全局只有一个变量，需要用引用的方式传入函数内，否则就会出现另一个std::ostream的对象引发冲突
 
 
 
