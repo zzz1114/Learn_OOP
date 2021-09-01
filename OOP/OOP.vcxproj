@@ -143,6 +143,7 @@
     <ClCompile Include="oop.cpp" />
     <ClCompile Include="point_circle.cpp" />
     <ClCompile Include="test case1-cube.cpp" />
+    <ClCompile Include="赋值运算符重载.cpp" />
     <ClCompile Include="运算符重载.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
