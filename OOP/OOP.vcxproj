@@ -143,6 +143,9 @@
     <ClCompile Include="oop.cpp" />
     <ClCompile Include="point_circle.cpp" />
     <ClCompile Include="test case1-cube.cpp" />
+    <ClCompile Include="继承.cpp" />
+    <ClCompile Include="继承中的对象模型.cpp" />
+    <ClCompile Include="菱形继承.cpp" />
     <ClCompile Include="赋值运算符重载.cpp" />
     <ClCompile Include="运算符重载.cpp" />
   </ItemGroup>

@@ -732,12 +732,243 @@ std::cout << MyAdd()(10, 20) << std::endl;
 
 
 
+## 继承
+
+继承的好处：减少重复代码
+
+语法： class 子类 ： 继承方式  父类
+
+子类也称作**派生类**
+
+父类也称作**基类**
+
+### 继承方式
+
+- 公共继承
+- 保护继承
+- 私有继承
+
+```c++
+class Base {
+public:
+	int a;
+protected:
+	int b;
+private :
+	int c;
+};
+
+class Pub : public Base {
+public:
+	void func4() { a = 10; b = 10; c = 10; }	//c不可访问
+};
+
+class Pro : protected Base {
+public:
+	void func5() { a = 10; b = 10; c = 10; }	//c不可访问
+};
+
+class Pri : private Base {
+public:
+	void func6() { a = 10; b = 10; c = 10; }	//c不可访问
+};
+```
+
+对于基类Base中的private属性，其子类（派生类）均不可访问（继承了但是不能访问）
+
+公共继承的子类Pub，基类中的public属性，在子类Pub中依旧是public的，基类中的protected属性在子类中也依旧是protected的
+
+保护继承的子类Pro，基类中的public、protected属性在子类中都变成了protected的了
+
+私有继承的之类Pri ，基类中的public、protected属性在子类中都变成了private的了
+
+![bandicam 2021-09-03 14-13-46-265](D:\Users\ZZZ\Desktop\bandicam 2021-09-03 14-13-46-265.jpg)
+
+
+
+### 继承中的对象模型
+
+**问题：**从父类继承过来的成员，哪些属于子类对象中？
+
+```c++
+class Base {
+public:
+	int m_A;
+protected:
+	int m_B;
+private:
+	int m_C;
+};
+
+class A : public Base {
+public:
+	int m_D;
+};
+
+void test01()
+{
+	A a;
+	std::cout << sizeof(a) << std::endl;
+}
+```
+
+sizeof打印结果是多少？
+
+结果是16，说明了子类继承父类，不仅把public、protected的属性继承过来了，而且把不可访问的private属性也继承过来了
+
+> 利用开始菜单中的Visual Studio的开发人员命令工具可以查看类的内存布局，首先转到.cpp文件所在目录，然后输入下面的命令：
+>
+> ```
+> cl /d1 reportSingleClassLayoutName "Name.cpp"
+> ```
+>
+> 前面cl是英文字母l，后面d1是数字1
+>
+> 作用是报告单个类的布局，类名为Name，所在文件为Name.cpp
 
 
 
 
 
+ ### 继承中的构造和析构函数的调用顺序
+
+逻辑上看，先有父类，才有子类，应该是先父类的构造，然后子类的构造；先子类的析构，再父类的析构
+
+![image-20210903151839005](C:\Users\ZZZ\AppData\Roaming\Typora\typora-user-images\image-20210903151839005.png)
 
 
 
- 
+
+
+### 继承中同名成员处理方式
+
+如果子类中的成员跟父类中的成员同名，则子类对象默认访问的是子类成员
+
+```c++
+class Base {
+public:
+	Base(): m_A(200) {}
+	int m_A;
+};
+
+class A : public Base {
+public:
+	A() : m_A(100) {}
+	int m_A;
+};
+
+void test01()
+{
+	A a;
+	std::cout << a.m_A << std::endl;
+	std::cout << a.Base::m_A << std::endl;;
+	std::cout << "---------------" << std::endl;
+}
+```
+
+默认a.m_A访问的是子类A的成员，如果要访问父类的成员，就要加上父类的作用域Base::
+
+对于成员函数，也是同样的，但是如果在父类中有一个重载，子类中没有这个重载，如果直接调用这个重载就会报错
+
+```c++
+class Base{
+public:
+    void func() { std::cout << "func in Base" << std::endl; }
+    void func(int a) { std::cout << "func(int a) in Base" << std::endl; }
+};
+
+class A : public Base{
+public:
+    void func() { std::cout << "func in A " << std::endl; }
+};
+....
+A a;
+a.func(10);	//	会报错
+```
+
+因为子类存在func的情况下使用'.'符号就默认使用了子类中的函数，而子类没有这种重载，就会报错，解决办法需要加上Base的作用于：a.Base::func(10);
+
+> 如果子类中出现了和父类同名的成员函数，子类的同名成员会隐藏掉父类中所有的同名成员函数
+
+
+
+### 多继承语法
+
+class 类名 ：继承方式 类1，继承方式 类2，继承方式 类3.....
+
+### 菱形继承（！！！）
+
+菱形继承概念：
+
+​	两个派生类继承同一个类
+
+​	又有某个类同事继承两个派生类
+
+这种继承称为菱形继承
+
+```c++
+class Base {
+public:
+	int m_Age;
+};
+
+class Son1 : public Base {
+public:
+	int m_A;
+};
+
+class Son2 : public Base {
+public:
+	int m_A;
+};
+
+class GrandSon : public Son1, public Son2 {
+public:
+	int m_A;
+};
+
+```
+
+
+
+![image-20210903164420349](C:\Users\ZZZ\AppData\Roaming\Typora\typora-user-images\image-20210903164420349.png)
+
+就会出现一个问题，这里GrandSon类同时继承了Son1和Son2类，而Son1和Son2类分别够继承了Base类，Base类中有个m_Age属性，不管是Son1、Son2、GrandSon，这个属性只需要一个就好了，但是在GrandSon中，这个属性出现了两次，浪费内存。
+
+解决办法是**虚继承**，在继承前加上vertual关键字，就变成了虚继承
+
+```c++
+class Base {
+public:
+	int m_Age;
+};
+
+class Son1 : vertual public Base {
+public:
+	int m_A;
+};
+
+class Son2 : vertual public Base {
+public:
+	int m_A;
+};
+
+class GrandSon : public Son1, public Son2 {
+public:
+	int m_A;
+};
+```
+
+#### 虚继承的内存分布（！！！）
+
+使用虚继承后的内存分布如下：
+
+![image-20210903181335333](C:\Users\ZZZ\AppData\Roaming\Typora\typora-user-images\image-20210903181335333.png)
+
+其中原本的Son1的Base类处的m_Age处现在是一个vbprt，这是virtual base pointer，虚基类指针，它指向了vbtable，虚基类表，也就是后面GrandSon::$vbtable@Son1@:这一行，这个表中记录了一个偏移量20（相对于GrandSon  Son1的基地址），也就是地址为20的m_Age。
+
+同样的，Son2的Base处的m_Age也是一个虚基类指针，指向了GrandSon::$vbtable@Son2@这里，里面也是一个偏移量，相对于GrandSon的Son2的基地址，偏移量为12，即地址为12+8=20处的m_Age。因此这个类GrandSon中只有一个m_Age了。
+
+而sizeof(GrandSon)由原来的20变为了24，是因为虽然m_Age由两个变成了一个，但是新增加了两个虚基类指针，又增加了8字节，因此一共就是24字节的空间了。
+
+> 现在在GrandSon中只有一个m_Age了，对于GrandSon g，不管是g.Son1::m_Age还是g.Son2::m_Age，或者是g.m_Age,都是同一个值，相当于多个指针指向了同一变量
