@@ -972,3 +972,258 @@ public:
 而sizeof(GrandSon)由原来的20变为了24，是因为虽然m_Age由两个变成了一个，但是新增加了两个虚基类指针，又增加了8字节，因此一共就是24字节的空间了。
 
 > 现在在GrandSon中只有一个m_Age了，对于GrandSon g，不管是g.Son1::m_Age还是g.Son2::m_Age，或者是g.m_Age,都是同一个值，相当于多个指针指向了同一变量
+
+
+
+
+
+
+
+## 类型兼容规则
+
+类型兼容规则是指在需要基类对象的任何地方，都可以使用**公有**派生类的对象来替代
+
+如果子类是保护继承或是私有继承，那个原本父类中的公有属性，在子类中就都成了protected的或是private的属性了，在类外原本可以访问的一些属性，在子类中也访问不到了，因此就不能代替父类了。
+
+> 通过公有继承，派生类得到了基类中出构造函数、析构函数之外的所有成员。这样，公有派生类实际就具备了基类的所有功能，凡是基类能解决的问题，公有派生类都可以解决。所替代的对象包括以下情况：
+>
+> - 派生类的对象可以隐含转换为基类对象
+>
+>     ```c++
+>     class Base{};
+>     class Son : public Base{};
+>     ...
+>     Son son;
+>     Base p = son;
+>     ```
+>
+> - 派生类的对象可以初始化基类的引用
+>
+>     ```c++
+>     class Base{};
+>     class Son : public Base{};
+>     ...
+>     Son son;
+>     Base& p = son;
+>     ```
+>
+> - 派生类的指针可以隐含转换为基类的指针
+>
+>     ```c++
+>     class Base{};
+>     class Son : public Base{};
+>     ...
+>     Son son;
+>     Son* p = &son;
+>     Base* p2 = p;
+>     ```
+
+
+
+
+
+## 多态
+
+多态分为两类：
+
+- 静态多态：函数重载   运算符重载属于静态多台，复用函数名
+- 动态多态：派生类和虚函数实现**运行时**多态
+
+区别：
+
+- 静态多台的函数地址早绑定 —— 编译阶段确定函数地址
+- 动态多态的函数地址晚绑定 —— 运行阶段确定函数地址
+
+```c++
+class Animal {
+public:
+    void Speak() { std::cout << "Animal is speaking " << std::endl; }
+};
+
+class Cat : public Animal {
+public:
+    void Speak() { std::cout << "Cat is speaking " << std::endl; }
+};
+
+void doSpeak(Animal& animal)
+{
+    animal.Speak();
+}
+
+void test01()
+{
+    Cat cat;
+    doSpeak(cat);
+}
+```
+
+调用doSpeak(cat)最后打印出来的是 “animal is speaking" 而不是猫在说话，这时因为在doSpeak函数中的调用animal.Speak()，其中Speak()函数的地址早绑定了，在编译阶段就确定了函数的地址，指向了第3行代码出的地址，因此最后会打印出动物在说话。
+
+解决办法就是让Speak()函数晚绑定，在运行阶段再绑定函数地址，方法就是在基类的Speak()函数定义前加上virtual关键字，使其变成一个虚函数。
+
+### 多态的条件
+
+- 首先需要有继承关系
+- 子类对父类的虚函数进行了重写
+- 满足赋值兼容规则
+
+> 重写：函数返回值类型、函数名、参数列表完全一致
+
+
+
+### 多态的使用
+
+**父类的指针或引用，指向子类对象**
+
+如果doSpeak函数是值传递形式，就不能进行晚绑定，这样不管基类中的Speak函数是不是定义为虚函数，都不能进行晚绑定。
+
+```c++
+void doSpeak(Animal animal)
+{
+    animal.Speak();
+}
+```
+
+如果函数是引用方式，或者是一个基类类型的指针，就可以进行晚绑定，实现多态
+
+
+
+### 多态的底层（virtual对sizeof结果的影响）
+
+```c++
+class Animal {
+public:
+    void Speak() { std::cout << "Animal is speaking " << std::endl; }
+};
+
+std::cout << sizeof(Animal) << std::endl;
+```
+
+```c++
+class Animal {
+public:
+    virtual void Speak() { std::cout << "Animal is speaking " << std::endl; }
+};
+
+std::cout << sizeof(Animal) << std::endl;
+```
+
+上面的结果分别是1 4第一个相当于一个空类，大小为1，第二个则是因为存在一个**虚函数指针**
+
+> 只会有一个vfptr，多个虚函数将会在vftable中体现，但是vfptr只有一个，因此尽管有多个虚函数，但是在计算大小时只按照一个指针的大小计算
+>
+> ```c++
+> class Animal {
+> public:
+>     virtual void Speak() { std::cout << "Animal is speaking " << std::endl; }
+>     virtual void Speak2() { std::cout << "Animal is speaking " << std::endl; }
+>     virtual void Speak3() { std::cout << "Animal is speaking " << std::endl; }
+> };
+> 
+> std::cout << sizeof(Animal) << std::endl;
+> ```
+>
+> 这个例子，尽管定义了三个虚函数，但是最后sizeof结果还是4，因为只存在一个vfptr，在vftable中才会有多一个的函数地址
+
+声明时加上了virtual关键字，就会在类中添加一个vfprt（虚函数指针），指向了一个vftable（虚函数表），这个表中记录了这个函数体的位置，在在基类中，就是&Animal::Speak
+
+如果是派生类：
+
+```c++
+class Animal {
+public:
+    int a;
+    virtual void Speak() { std::cout << "Animal is speaking " << std::endl; }
+};
+
+class Cat : public Animal {
+public:
+    void Speak() { std::cout << "Cat is speaking " << std::endl; }
+};
+
+void doSpeak(Animal& animal)
+{
+    animal.Speak();
+}
+
+void test01()
+{
+    Cat cat;
+    doSpeak(cat);
+    std::cout << "类Animal的大小：" << sizeof(Animal) << std::endl;
+}
+```
+
+![image-20210904111146526](C:\Users\ZZZ\AppData\Roaming\Typora\typora-user-images\image-20210904111146526.png)
+
+![image-20210904111223422](C:\Users\ZZZ\AppData\Roaming\Typora\typora-user-images\image-20210904111223422.png)
+
+Cat类继承了Animal类，也有一个vfptr，但是其指向的vftable却跟基类Animal中的不一样，函数体变了，在基类中函数体地址是&Animal::Speal，在Cat中，函数体地址为&Cat::Speak，这就是
+
+vftable中地址的不同是因为派生类中对函数重写的结果，如果没有进行重写，那个在Cat类的vftable中函数地址将还是&Animal::Speak
+
+
+
+### 多态案例 —— 计算器类
+
+分别利用普通写法和多态技术，设计实现两个操作数进行运算的计算器类
+
+....
+
+写代码时，提倡 开闭原则：对扩展进行开放，对修改进行关闭。这样组织结构清晰，可读性强，便于前期和后期的维护
+
+```c++
+class AbstractCalculator    //计算器的抽象类
+{
+public:
+    AbstractCalculator(int a, int b) : m_Num1(a), m_Num2(b) { }
+    virtual int getResult() { return 0; }
+    int m_Num1;
+    int m_Num2;
+};
+
+//加法：
+class AddCalculator : public AbstractCalculator
+{
+public:
+    AddCalculator(int a, int b) : AbstractCalculator(a, b) { }
+    int getResult() { return m_Num1 + m_Num2; }
+};
+
+//减法：
+class SubCalculator : public AbstractCalculator
+{
+public:
+    SubCalculator(int a, int b) :AbstractCalculator(a, b) {}
+    int getResult() { return m_Num1 - m_Num2; }
+};
+
+
+void test01()
+{
+    AbstractCalculator* ptr = new AddCalculator(10, 20);
+    std::cout << ptr->getResult() << std::endl;
+    delete ptr;
+
+    ptr = new SubCalculator(12, 20);
+    std::cout << ptr->getResult() << std::endl;
+    delete ptr;
+}
+```
+
+将计算器进行抽象，定义一个抽象类，主要的共性是两个操作数，作为抽象类的属性，使用这个抽象类来派生出各种的计算操作：加减乘除等。这样做的好处是便于维护，便于扩展，如果想增加一个计算功能，只需要再写一个派生类，不用对基类进行任何的修改，减少了出错的可能。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
