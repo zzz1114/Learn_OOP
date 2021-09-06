@@ -1158,7 +1158,7 @@ void test01()
 
 ![image-20210904111223422](C:\Users\ZZZ\AppData\Roaming\Typora\typora-user-images\image-20210904111223422.png)
 
-Cat类继承了Animal类，也有一个vfptr，但是其指向的vftable却跟基类Animal中的不一样，函数体变了，在基类中函数体地址是&Animal::Speal，在Cat中，函数体地址为&Cat::Speak，这就是
+Cat类继承了Animal类，（**无论Cat类中Speak函数是否加上virtual关键字，都算作虚函数**）也有一个vfptr，但是其指向的vftable却跟基类Animal中的不一样，函数体变了，在基类中函数体地址是&Animal::Speal，在Cat中，函数体地址为&Cat::Speak，这就是
 
 vftable中地址的不同是因为派生类中对函数重写的结果，如果没有进行重写，那个在Cat类的vftable中函数地址将还是&Animal::Speak
 
@@ -1212,6 +1212,329 @@ void test01()
 ```
 
 将计算器进行抽象，定义一个抽象类，主要的共性是两个操作数，作为抽象类的属性，使用这个抽象类来派生出各种的计算操作：加减乘除等。这样做的好处是便于维护，便于扩展，如果想增加一个计算功能，只需要再写一个派生类，不用对基类进行任何的修改，减少了出错的可能。
+
+### 纯虚函数和抽象类
+
+当父类中的虚函数实现没有意义，主要是通过其子类调用虚函数时，可以将这个虚函数声明为纯虚函数，这样，**包含纯虚函数的类就称为抽象类**。
+
+纯虚函数的声明：virtual  返回值类型   函数名（参数列表） = 0；
+
+```c++
+virtual Speak() = 0;	//声明一个纯虚函数
+```
+
+抽象类的特点：
+
+- 无法实例化子对象（栈区和堆区都不行）
+- 子类必须重写抽象类中的纯虚函数，**否则也属于抽象类**
+
+```c++
+class AbstractAnimal 
+{
+public:
+    virtual void Speak() = 0;	//只要有一个纯虚函数，这个类就是抽象类
+    virtual void Fight() { std::cout << "Animal is fighting " << std::endl; }
+};
+
+class Cat : public AbstractAnimal
+{
+public:
+    void Speak() { std::cout << "Cat is speaking " << std::endl; }
+};
+```
+
+
+
+### 案例2 制作饮品
+
+描述：
+
+制作饮品的大致流程为：煮水 - 冲泡 - 倒入杯中 - 加入辅料
+
+利用多态技术实现本案例，提供抽象制作饮品基类，提供子类制作咖啡和茶叶
+
+- 制作咖啡：煮水 - 冲泡咖啡 - 倒入杯中 - 加入糖和牛奶
+- 制作茶   ：煮水 - 冲泡茶叶 - 倒入杯中 - 加入柠檬
+
+实现如下：
+
+```c++
+// boil   煮水
+// crew   冲泡 
+// pour in cup  倒入杯中
+
+class AbstractDrinking
+{
+public:
+    //有四个步骤：煮水 - 冲泡 - 倒入杯中 - 加入辅料
+    void Water() { std::cout << "将水加热至沸腾" << std::endl; }
+    virtual void Crew() = 0;
+    void PourInCup() { std::cout << "将冲泡后的水倒入杯中 " << std::endl; }
+    virtual void AddOther() = 0;
+    void MakeDrink() {
+        Water();
+        Crew();
+        PourInCup();
+        AddOther();
+    }
+};
+
+class Tea : public AbstractDrinking
+{
+public:
+    void Crew() { std::cout << "冲泡茶叶" << std::endl; }
+    void AddOther() { std::cout << "加入准备好的柠檬" << std::endl; }
+};
+
+class Coffee : public AbstractDrinking
+{
+public:
+    void Crew() { std::cout << "冲泡咖啡" << std::endl; }
+    void AddOther() { std::cout << "加入糖和牛奶" << std::endl; }
+};
+
+void test01()
+{
+    Tea tea;
+    Coffee coffee;
+    tea.MakeDrink();
+    coffee.MakeDrink();
+}
+```
+
+有一点瑕疵就是每次要制作茶或者咖啡时，都需要先创建对象，然后通过对象调用MakeDrink函数，不是很方便，于是可以做如下改进：添加一个函数
+
+```c++
+void MakeDrink(AbstractDrinking * abs)
+{
+    if(abs != NULL)
+        abs->MakeDrink();
+    delete abs;
+    abs = NULL;
+}
+```
+
+> 将MakeDrink作为制作的接口，不管制作什么饮品，只需要调用这个函数就可以实现。即一个接口可以有不同的状态——多态
+
+这样，每次要制作茶或者牛奶时，就可以MakeDrink(new Tea)或者MakeDrink(new Coffee)来直接调用，代码只有一行，并且可读性也更强。在MakeDrink函数体内已经对在堆区new出来的空间进行释放了，防止内存泄漏。
+
+
+
+### 虚析构和纯虚析构
+
+多态使用时，如果子类中有属性开辟到堆区，那么父类指针在释放时无法调用到子类的析构代码
+
+问题引入：
+
+```c++
+class Base
+{
+public:
+    Base() { std::cout << "Base的默认构造函数" << std::endl; }
+    ~Base() { std::cout << "Base的析构函数" << std::endl; }
+};
+
+class A : public Base
+{
+public:
+    A(int a)
+    {
+        std::cout << "A的构造函数" << std::endl;
+        m_Num1 = new int(a);
+    }
+    ~A()
+    {
+        std::cout << "A的析构函数" << std::endl;
+        delete m_Num1;
+        m_Num1 = NULL;
+    }
+    int* m_Num1;
+};
+
+...
+Base *p = new A(10);
+delete p;
+```
+
+结果是：
+
+![image-20210906104913588](C:\Users\ZZZ\AppData\Roaming\Typora\typora-user-images\image-20210906104913588.png)
+
+可以看到，A的析构函数并没有被调用，那个A中从堆区开辟的内存就没有被释放，会造成内存泄漏。
+
+**为什么A的析构函数没有被调用？**首先，A是基类Base的一个派生类，**可以通过派生类指针隐含转换为基类指针，因为派生类包含了基类的全部信息，可以代替基类**。这种情况是通过**基类指针**释放内存的，指针p是指向Base类型的指针，执行delete p 会去调用Base的析构函数，而不会调用子类A的析构函数。
+
+解决办法：使用虚构造或纯虚构造
+
+- 虚析构函数   virtual ~类名（）{ }
+
+- 纯虚析构函数：
+
+    virtual ~类名（）= 0；
+
+    类名：：~类名（）  {}
+
+可以看到，无论是虚析构函数还是纯虚析构函数，都要有析构函数的定义，因为在积累中也可能有在堆区开辟的内存需要释放。
+
+**当声明了纯虚析构函数，那么这个类就成了一个抽象类**
+
+虚析构函数：
+
+```c++
+class Base
+{
+public:
+    Base()
+    {
+        std::cout << "Base的默认构造函数" << std::endl;
+    }
+    virtual ~Base()
+    {
+        std::cout << "Base的析构函数" << std::endl;
+    }
+};
+```
+
+纯虚析构函数：
+
+```c++
+class Base
+{
+public:
+    Base()
+    {
+        std::cout << "Base的默认构造函数" << std::endl;
+    }
+    virtual ~Base() = 0;
+};
+
+Base::~Base()
+{
+    std::cout << "Base的纯虚析构函数" << std::endl;
+}
+```
+
+利用虚析构可以解决 父类指针释放子类对象时不干净的问题
+
+### 案例3 电脑组装
+
+电脑主要组成部件为CPU（用于计算）、显卡（用于显示）、内存条（用于存储）
+
+将每个零件封装出抽象基类，并且提供不同的厂商生产不同的零件，例如Intel厂商和Lenovo厂商
+
+创建电脑类提供让电脑工作的函数，并调用每个零件工作的接口
+
+测试时组装三台不同的电脑进行工作
+
+```c++
+class CPU
+{
+public:
+    CPU() { std::cout << "CPU生产完成" << std::endl; }
+    virtual void Calculate() = 0;
+};
+
+class ShowCard
+{
+public:
+    ShowCard() { std::cout << "显卡生产完成" << std::endl; }
+    virtual void Display() = 0;
+};
+
+class RAM
+{
+public:
+    RAM() { std::cout << "RAM生产完成 " << std::endl; }
+    virtual void Storage() = 0;
+};
+
+//将每个零件封装出抽象基类，并且提供不同的厂商生产不同的零件
+//具体的CPU零件
+class IntelCPU : public CPU
+{
+    void Calculate() { std::cout << "Intel的CPU开始计算" << std::endl; }
+};
+
+class LenovoCPU : public CPU
+{
+    void Calculate() { std::cout << "Lenovo的CPU开始计算" << std::endl; }
+};
+
+//具体的显卡零件
+class IntelShowCard : public ShowCard
+{
+    void Display() { std::cout << "Intel的显卡开始显示" << std::endl; }
+};
+
+class LenovoShowCard : public ShowCard
+{
+    void Display() { std::cout << "Lenovo的显卡开始显示" << std::endl; }
+};
+
+//具体的内存条零件
+class IntelRAM : public RAM
+{
+    void Storage() { std::cout << "Intel的内存条开始存储" << std::endl; }
+};
+
+class LenovoRAM : public RAM
+{
+    void Storage() { std::cout << "Lenovo的内存条开始存储" << std::endl; }
+};
+
+
+
+class Cumputer
+{
+public:
+    Cumputer(CPU* cpu, ShowCard* card, RAM* ram) : m_cpu(cpu), m_card(card), m_ram(ram) { }
+    ~Cumputer()
+    {
+        std::cout << "销毁一个电脑" << std::endl;
+        delete m_cpu;
+        m_cpu = NULL;
+        delete m_card;
+        m_card = NULL;
+        delete m_ram;
+        m_ram = NULL;
+    }
+    void Work()
+    {
+        m_cpu->Calculate();
+        m_card->Display();
+        m_ram->Storage();
+    }
+private:
+    CPU* m_cpu;
+    ShowCard* m_card;
+    RAM* m_ram;
+};
+
+void test01()
+{
+    Cumputer a(new IntelCPU, new LenovoShowCard, new IntelRAM);
+    std::cout << "-------------" << std::endl;
+    a.Work();
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
