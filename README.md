@@ -1522,11 +1522,189 @@ void test01()
 
 
 
+## 文件操作
+
+程序运行产生的数据都属于临时数据，程序一旦运行结束都会被释放
+
+文件操作需要包含 fstream 头文件
+
+读文件或写文件用到的文件流类：
+
+- ofstream	写文件  从程序 out 到文件中
+- ifstream     读文件
+- fstream      读和写
+
+使用 open函数打开文件，方式为 对象.open(文件名， 打开方式)    文件名中路径的'\\'符号需要加上转义字符，即应该用"\\\\"这种方式
+
+打开方式：
+
+| 打开方式         | 解释                                              |
+| ---------------- | ------------------------------------------------- |
+| std::ios::in     | 为读文件而打开文件                                |
+| std::ios::out    | 为写文件而打开文件                                |
+| std::ios::ate    | 起始位置定位到文件末尾                            |
+| std::ios::app    | appent 追加方式写文件，所有的写入都追加到文件末尾 |
+| std::ios::trunc  | 如果文件存在，先删除，再创建                      |
+| std::ios::binary | 二进制方式                                        |
+
+
+
+### 写文件
+
+```c++
+#include <iostream>
+#include <fstream>
+#include <string>
+
+const char* PATH = "..\\file\\test.txt";
+
+void test01()
+{
+    std::ofstream ofs;		//撞见文件流对象，写入文件
+    ofs.open(PATH, std::ios::out);
+    if (!ofs.is_open())
+    {
+        std::cout << "failed to open <" << PATH << ">" << std::endl;
+        return;
+    }
+    ofs << "你好世界 " << std::endl;
+    ofs << "姓名：张三" << std::endl;
+
+    ofs.close();
+}
+```
+
+直接使用 << 符号，将要写入的字符串写入到文件中，例如
+
+```c++
+char text[1024] = {0};
+std::cin >> text;
+ofs << text;
+```
+
+这样就可以将输入流的数据写入到文件中
+
+
+
+### 读文件
+
+四种方式：
+
+- 使用 对象 >> text的方式读入一行
+
+- 使用成员函数 getline，传入一个用于接收的字符指针，一个每次读入的最大字符数
+- 使用全局函数getline，传入一个输入流，一个用于接收的string变量
+- 使用成员函数get，每次只读一个字符
+
+```c++
+void test02()
+{
+    std::ifstream ifs;  //读取文件
+    ifs.open(PATH, std::ios::in);
+    
+    //第一种方式
+    //std::string text;
+    //while(ifs >> text)
+    //{
+    //    std::cout << text << std::endl;
+    //}
+
+    //第二种方式，使用 getline函数
+    //char text[1024] = { 0 };
+    //while (ifs.getline(text, sizeof(text)))
+    //{
+    //    std::cout << text << std::endl;
+    //}
+    
+    //第三种方式，使用全局 getline
+    //std::string text;
+    //while (std::getline(ifs, text))
+    //{
+    //    std::cout << text << std::endl;
+    //}
+
+    //第四种方式 使用 get函数，一个字符一个字符的读
+    char c;
+    while ((c = ifs.get()) != EOF)
+    {
+        std::cout << c;     //这种方式就不能加换行了，因为换行字符\n也被读进来了，会自动换行
+    }
+
+
+    ifs.close();
+}
+```
+
+注意第四种方式中，每次只读出一个字符，这样换行符\\n也会被读进来，于是不用在后面加上endl
+
+
+
+### 二进制文件
+
+使用成员函数write进行写入
+
+```c++
+ostream& write(const char * buffer, int len)
+```
+
+字符指针buffer指向内存中一段存储卡空间，len是读写的字节数
+
+**当使用同一个文件流对象同时进行读和写操作时，要注意文件指针指向的位置！！！**
+
+```c++
+void test03()   //二进制文件读写
+{
+    std::fstream file(PATH2, std::ios::in | std::ios::out | std::ios::binary | std::ios::trunc);
+    if (!file.is_open())
+    {
+        std::cout << "failed to open < " << PATH2 << " >" << std::endl;
+        return;
+    }
+
+    Person p("张三", 10);  
+    Person p2; 
+    p.Show();
+
+    //写
+    file.write((const char*)&p, sizeof(Person));
+
+    //读
+    file.read((char*)&p2, sizeof(Person));
+    p2.Show();
+
+    file.close();
+}
+```
+
+这个例子中，写入后马上进行读取，结果显示了乱码，原因就是因为在写入后，文件指针变被定位到了文件末尾，这样在下面读取时就是从文件末尾开始读取的，肯定会乱码。
+
+解决方法就是在写入后读取前将文件指针重置到文件开头，使用下面的设置文件指针位置函数。
 
 
 
 
 
+### 文件位置指针
+
+istream和ostream都提供了用于重新定位文件位置指针的成员函数，包括关于istream的seekg("seek get")和关于ostream的seekp("seek put")>
+
+seekg和seekp的参数通常是一个长整形。第二个参数为可以用于指定查找方向，查找找方向可以使ios::beg(默认的，从流的开头开始定位)，也可以是ios::cur(从流的当前位置开始定位)，也可以是ios::end(从流的末尾开始定位).
+
+文件指针是一个整数值，制定了从文件的起始位置指针到指针所在位置的字节数。
+
+```c++
+//定位到fileObject的第n个字节(默认ios::beg)
+fileObject.seekg(n);
+
+//把文件的读指针从fileObgect当前位置向后移动n个字节
+fileObject.seekg(n, ios::cur);
+
+//把文件的读指针从fileObgect末尾往回移动n个字节
+fileObject.seekg(n, ios::end);
+
+//定位到fileObgect的末尾
+fileObject.seekg(0, ios::end);
+```
 
 
 

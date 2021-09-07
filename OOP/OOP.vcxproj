@@ -145,6 +145,7 @@
     <ClCompile Include="test case1-cube.cpp" />
     <ClCompile Include="使用多态编程.cpp" />
     <ClCompile Include="多态.cpp" />
+    <ClCompile Include="文件操作.cpp" />
     <ClCompile Include="案例：制作饮品.cpp" />
     <ClCompile Include="案例：电脑组装.cpp" />
     <ClCompile Include="纯虚函数和抽象类.cpp" />
